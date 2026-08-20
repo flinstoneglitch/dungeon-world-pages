@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Dungeon World | QeNTROPY Comics</title>
+<meta name="description" content="Dungeon World — a roguelite arcade dungeon crawler from QeNTROPY Comics. Descend, phase through walls, blast monsters, and see how deep you can go."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --page:     #f3e7c2;
+    --paper-2:  #f8efd6;
+    --ink:      #2b2230;
+    --gold:     #f2c230;
+    --gold-dk:  #b18113;
+    --blue:     #35a7e0;
+    --blue-dk:  #1d5d8d;
+    --red:      #d84a54;
+    --red-dk:   #7a2630;
+    --green:    #78c850;
+    --green-dk: #4f9a34;
+    --purple:   #7d5ce2;
+    --purple-dk:#402a7a;
+    --title-yellow: #ffd53d;
+    --display:  'Bangers', system-ui, sans-serif;
+    --body:     'Comic Neue', ui-rounded, system-ui, sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; font-family:var(--body); color:var(--ink); background:var(--page);
+    background-image: radial-gradient(circle, #e1d19e 1px, transparent 1px);
+    background-size: 14px 14px;
+  }
+  .wrap{ max-width:920px; margin:0 auto; padding:36px 20px 64px; }
+
+  .hero{
+    text-align:center; margin-bottom:28px;
+  }
+  .kicker{ font-family:var(--display); letter-spacing:2px; font-size:15px; color:var(--blue-dk); margin:0 0 6px; }
+  h1{
+    font-family:var(--display); font-weight:400; font-size:min(64px,11vw); line-height:.95;
+    color:var(--title-yellow); -webkit-text-stroke:3px var(--ink); margin:6px 0 10px;
+    letter-spacing:1px;
+  }
+  .tagline{ font-size:18px; color:#4a4133; max-width:520px; margin:0 auto 22px; line-height:1.5; }
+
+  .hero-art{
+    display:block; margin:0 auto 26px; max-width:320px; width:80%;
+    border:4px solid var(--ink); border-radius:14px; box-shadow:6px 6px 0 var(--ink);
+    background:#000;
+  }
+
+  .cta-row{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-bottom:8px; }
+  .btn{
+    font-family:var(--display); letter-spacing:.5px; font-size:17px; text-decoration:none;
+    padding:14px 26px; border:2.5px solid var(--ink); border-radius:10px;
+    box-shadow:3px 3px 0 var(--ink); display:inline-block; transition:transform .1s;
+  }
+  .btn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
+  .btn-primary{ background:var(--green); color:var(--ink); }
+  .btn-secondary{ background:var(--paper-2); color:var(--ink); }
+  .soon-note{ font-size:12.5px; color:#6b6048; margin-top:10px; }
+
+  .section{
+    background:var(--paper-2); border:3px solid var(--ink); border-radius:12px;
+    box-shadow:4px 4px 0 var(--ink); padding:26px 28px; margin:26px 0;
+  }
+  h2{
+    font-family:var(--display); font-weight:400; letter-spacing:.5px; font-size:24px;
+    color:var(--red-dk); margin:0 0 14px; -webkit-text-stroke:.4px var(--ink); text-align:center;
+  }
+  .features{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin:0;
+  }
+  .feature{
+    background:var(--page); border:2px solid var(--ink); border-radius:10px; padding:14px 16px;
+  }
+  .feature .f-title{ font-family:var(--display); letter-spacing:.5px; font-size:15px; color:var(--purple-dk); margin:0 0 4px; }
+  .feature p{ margin:0; font-size:14px; line-height:1.5; color:#3a3140; }
+
+  .pricing-note{
+    text-align:center; font-size:14.5px; line-height:1.6; color:#4a4133; max-width:520px; margin:0 auto;
+  }
+  .pill{
+    font-family:var(--display); font-size:13px; letter-spacing:.5px; color:var(--ink);
+    background:var(--gold); border:2px solid var(--ink); border-radius:20px; padding:3px 12px;
+    display:inline-block; margin:2px;
+  }
+
+  footer{ text-align:center; margin-top:32px; font-size:12px; color:#8a7f63; }
+  footer a{ color:#6b6048; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <p class="kicker">QeNTROPY COMICS PRESENTS</p>
+    <h1>DUNGEON WORLD</h1>
+    <p class="tagline">A pixel-comic roguelite arcade crawler. Phase through walls, blast monsters, dodge the dark, and see how many floors down you can survive.</p>
+
+    <img class="hero-art" src="WizardSprite.webp" alt="Dungeon World wizard character art"/>
+
+    <div class="cta-row">
+      <a class="btn btn-primary" href="index.html">▶ PLAY FREE IN YOUR BROWSER</a>
+      <a class="btn btn-secondary" href="#store">📱 GET IT ON iPHONE</a>
+    </div>
+    <p class="soon-note" id="store">iOS app coming soon to the App Store.</p>
+  </div>
+
+  <div class="section">
+    <h2>WHAT'S DOWN THERE</h2>
+    <div class="features">
+      <div class="feature">
+        <p class="f-title">DESCEND, FLOOR BY FLOOR</p>
+        <p>Every run drops you deeper into the dungeon. Monsters get tougher, rooms get meaner — how far can you push it?</p>
+      </div>
+      <div class="feature">
+        <p class="f-title">PHASE &amp; FIGHT</p>
+        <p>Blast enemies, slip through walls, and pull off a well-timed nuke when things get out of hand.</p>
+      </div>
+      <div class="feature">
+        <p class="f-title">TOUCH-READY</p>
+        <p>Built for mobile with on-screen controls, and just as playable at a desk with keyboard and mouse.</p>
+      </div>
+      <div class="feature">
+        <p class="f-title">PLAY YOUR WAY</p>
+        <p>Free to play with the option to watch a quick ad for extra continues, or go ad-free forever with a one-time unlock.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>FREE TO PLAY</h2>
+    <p class="pricing-note">
+      Dungeon World is free. Watch a short ad for a couple of extra continues each run, or grab
+      <span class="pill">Remove Ads — $1.99</span>
+      once and unlock unlimited continues with no ads, forever.
+    </p>
+  </div>
+
+  <footer>Dungeon World · a QeNTROPY Comics arcade game · <a href="https://artphorm.xyz">Artphorm</a> · <a href="privacy.html">Privacy Policy</a></footer>
+</div>
+</body>
+</html>
