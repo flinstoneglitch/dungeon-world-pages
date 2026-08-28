@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dungeon World — Support</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1a1320;
+    --panel:#2f2433;
+    --parchment:#f3e7c2;
+    --parchment-dim:#cbb98a;
+    --gold:#ffd53d;
+    --gold-deep:#f0a400;
+    --blue:#37aeea;
+    --purple:#8750e8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 20% 0%, #3a2d43 0%, transparent 55%),
+      radial-gradient(circle at 85% 20%, #24303f 0%, transparent 50%),
+      var(--ink);
+    color:var(--parchment);
+    font-family:"Comic Neue", system-ui, sans-serif;
+    line-height:1.6;
+  }
+  .wrap{ max-width:720px; margin:0 auto; padding:32px 20px 64px; }
+  header{ text-align:center; margin-bottom:8px; }
+  h1{
+    font-family:"Bangers", cursive;
+    letter-spacing:3px;
+    font-size:52px;
+    margin:0;
+    color:var(--gold);
+    text-shadow:3px 3px 0 #000;
+  }
+  .subtitle{
+    font-family:"Bangers", cursive;
+    letter-spacing:1px;
+    font-size:20px;
+    color:var(--blue);
+    margin:4px 0 36px;
+    text-align:center;
+  }
+  .card{
+    background:var(--panel);
+    border:4px solid var(--ink);
+    border-radius:16px;
+    box-shadow:6px 6px 0 rgba(0,0,0,0.4), inset 0 0 0 2px rgba(255,255,255,0.06);
+    padding:24px 22px;
+    margin-bottom:24px;
+  }
+  h2{
+    font-family:"Bangers", cursive;
+    letter-spacing:2px;
+    font-size:26px;
+    color:var(--gold);
+    margin:0 0 14px;
+  }
+  p{ margin:0 0 12px; color:var(--parchment); }
+  .muted{ color:var(--parchment-dim); font-size:14px; }
+  a{ color:#8fd0ff; }
+  a:hover{ color:var(--blue); }
+  .contact-row{
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .btn{
+    display:inline-block;
+    font-family:"Bangers", cursive;
+    letter-spacing:1px;
+    font-size:17px;
+    color:#3a2400;
+    background:radial-gradient(circle at 38% 32%, #ffe14d, var(--gold-deep));
+    border:3px solid var(--ink);
+    border-radius:12px;
+    padding:12px 20px;
+    text-decoration:none;
+    box-shadow:0 4px 0 rgba(0,0,0,0.35);
+  }
+  .btn:hover{ filter:brightness(1.05); }
+  dl{ margin:0; }
+  dt{
+    font-family:"Bangers", cursive;
+    letter-spacing:1px;
+    font-size:18px;
+    color:var(--blue);
+    margin:18px 0 6px;
+  }
+  dt:first-child{ margin-top:0; }
+  dd{ margin:0 0 0 0; color:var(--parchment); }
+  footer{
+    text-align:center;
+    margin-top:12px;
+    font-size:13px;
+    color:var(--parchment-dim);
+  }
+  footer a{ color:var(--parchment-dim); text-decoration:underline; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>DUNGEON WORLD</h1>
+    </header>
+    <div class="subtitle">SUPPORT &amp; HELP CENTER</div>
+
+    <div class="card">
+      <h2>Contact Us</h2>
+      <p>Running into a bug, a crash, a purchase issue, or just have a question? Reach out directly and we'll get back to you as soon as we can — usually within a couple of days.</p>
+      <div class="contact-row">
+        <a class="btn" href="mailto:colin.damage@gmail.com?subject=Dungeon%20World%20Support">✉ Email Support</a>
+        <span class="muted">colin.damage@gmail.com</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Frequently Asked Questions</h2>
+      <dl>
+        <dt>How do I remove ads / unlock unlimited continues?</dt>
+        <dd>From the "Run Over" screen, tap <strong>Remove Ads — $1.99</strong> (or <strong>Continue Instead — $1.99</strong>). This is a one-time purchase processed securely through Apple's App Store — Dungeon World never sees or stores your payment details.</dd>
+
+        <dt>I already paid — how do I restore my purchase?</dt>
+        <dd>On the "Run Over" screen, tap <strong>Restore purchase</strong> at the bottom. If you're signed in with the same Apple ID you used to buy it, your unlock will come back automatically. If it doesn't, email us and we'll help sort it out.</dd>
+
+        <dt>How does "Watch Ad to Continue" work?</dt>
+        <dd>You get up to 2 free ad-supported continues per run. Watch the short video to the end and you'll drop right back into your run. Once you've used both, you can restart for free or unlock unlimited continues with the one-time purchase above.</dd>
+
+        <dt>The game won't load, is stuck on a black screen, or keeps crashing.</dt>
+        <dd>First, try force-quitting Dungeon World and reopening it. If that doesn't help, make sure you're on the latest version from the App Store, and check that your device has a few hundred MB of free storage. Still stuck? Email us with your device model and iOS version and we'll dig in.</dd>
+
+        <dt>Do you collect my personal data?</dt>
+        <dd>Dungeon World doesn't require an account and doesn't collect personal information. Ad personalization and the App Tracking Transparency prompt are covered in full in our <a href="privacy_1.html">Privacy Policy</a>.</dd>
+      </dl>
+    </div>
+
+    <footer>
+      Dungeon World · <a href="privacy_1.html">Privacy Policy</a> · <a href="marketing.html">About</a><br>
+      Questions? <a href="mailto:colin.damage@gmail.com">colin.damage@gmail.com</a>
+    </footer>
+  </div>
+</body>
+</html>
