@@ -1,0 +1,1347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>Dungeon World | Artphorm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@700&display=swap" rel="stylesheet"/>
+<style>
+  :root{ --ink:#1a1320; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; height:100%; }
+  body{
+    font-family:"Comic Neue",system-ui,sans-serif; color:#f3e7c2;
+    background:
+      radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1.4px) 0 0 / 6px 6px,
+      radial-gradient(120% 60% at 50% 0%, #2a1a4a 0%, transparent 70%),
+      #0a0e18;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    padding:10px 10px 18px; min-height:100%; user-select:none; touch-action:none;
+  }
+  .brandbar{
+    width:100%; max-width:540px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    font-family:"Bangers",cursive; letter-spacing:1px; color:#ffd53d;
+    text-shadow:2px 2px 0 #000; font-size:18px; margin-bottom:8px; padding:0 4px;
+  }
+  .brandbar .q{ color:#35a7e0; } .brandbar .sub{ color:#cbb98a; font-size:12px; font-family:"Comic Neue"; letter-spacing:0; }
+  .frame{
+    width:100%; max-width:540px; border:5px solid #2f2433; border-radius:12px;
+    background:#2f2433; box-shadow:7px 7px 0 #00000066, inset 0 0 0 2px #ffffff14;
+    padding:6px; line-height:0;
+  }
+  #board{ display:block; width:100%; height:auto; aspect-ratio:1/1; border-radius:6px; background:#e8d08a; touch-action:none; }
+  .controls{
+    width:100%; max-width:540px; margin-top:12px; display:flex; align-items:center;
+    justify-content:space-between; gap:14px;
+  }
+  /* Desktop browsers use keyboard controls (WASD/Arrows, Space, Shift/G, N) —
+     the on-screen touch controls below are for mobile only. This hides the
+     whole control bar (and everything the mobile scripts fix-position out of
+     it) once the viewport is wider than the same 1000px breakpoint those
+     scripts use to decide "mobile". */
+  @media (min-width:1001px){
+    .controls{ display:none !important; }
+  }
+  .dpad{ display:grid; grid-template-columns:repeat(3,52px); grid-template-rows:repeat(3,52px); gap:6px; }
+  .pad{
+    font-size:20px; font-weight:700; color:#fff; border:3px solid var(--ink); border-radius:10px;
+    background:#35a7e0; box-shadow:0 4px 0 #1d5d8d; cursor:pointer;
+  }
+  .pad:active{ transform:translateY(3px); box-shadow:0 1px 0 #1d5d8d; }
+  #btn-up{ grid-area:1/2; } #btn-left{ grid-area:2/1; } #btn-right{ grid-area:2/3; } #btn-down{ grid-area:3/2; }
+  .rightpad{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .ghost{
+    font-family:"Bangers",cursive; letter-spacing:1px; font-size:15px; color:#fff;
+    width:96px; height:46px; border-radius:12px; border:3px solid var(--ink);
+    background:#7d5ce2; box-shadow:0 4px 0 #402a7a; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px;
+  }
+  .ghost:active{ transform:translateY(3px); box-shadow:0 1px 0 #402a7a; }
+  .nuke{
+    font-family:"Bangers",cursive; letter-spacing:1px; font-size:15px; color:#fff;
+    width:96px; height:42px; border-radius:12px; border:3px solid var(--ink);
+    background:#b061ff; box-shadow:0 4px 0 #5e2f8a; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px;
+  }
+  .nuke:active{ transform:translateY(3px); box-shadow:0 1px 0 #5e2f8a; }
+  .fire{
+    font-family:"Bangers",cursive; letter-spacing:1px; font-size:26px; color:#3a2400;
+    width:112px; height:112px; border-radius:50%; border:4px solid var(--ink);
+    background:radial-gradient(circle at 38% 32%, #ffe14d, #f0a400); box-shadow:0 6px 0 #9b6a00; cursor:pointer;
+  }
+  .fire:active{ transform:translateY(4px); box-shadow:0 2px 0 #9b6a00; }
+  .hint{ width:100%; max-width:540px; text-align:center; color:#8a86a0; font-size:12px; margin-top:10px; }
+  @media (max-width:520px){ .dpad{ grid-template-columns:repeat(3,46px); grid-template-rows:repeat(3,46px);} .fire{ width:100px;height:100px;font-size:22px;} }
+  /* The hint text lists keyboard shortcuts (WASD, SPACE, SHIFT/G, N) — meaningless
+     on a touchscreen and it visually overlaps the on-screen controls below it.
+     Hidden at the same breakpoint the touch controls use. */
+  @media (max-width:1000px){ .hint{ display:none; } }
+</style>
+<!-- FINAL MOBILE CONTROL LAYOUT FIX -->
+<style>
+  /* Smaller final mobile controls. Scoped to mobile widths only — this used
+     to apply unconditionally, which is what was pinning fixed on-screen
+     buttons (and a stray body::after patch rectangle) over the desktop
+     browser view. */
+@media (max-width:1000px){
+  #btn-up,
+  #btn-down,
+  #btn-left,
+  #btn-right {
+    position: fixed !important;
+    width: 42px !important;
+    height: 42px !important;
+    background: #37aeea !important;
+    border: 4px solid #0c3f7a !important;
+    color: white !important;
+    font-size: 0 !important;
+    font-weight: 900 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 99999 !important;
+    box-shadow: inset 0 -6px 0 rgba(0,0,0,0.25) !important;
+    touch-action: manipulation !important;
+  }
+
+  #btn-up {
+    left: 66px !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 130px) !important;
+    border-radius: 16px 16px 0 0 !important;
+    border-bottom: 0 !important;
+  }
+
+  #btn-down {
+    left: 78px !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 42px) !important;
+    border-radius: 0 0 16px 16px !important;
+    border-top: 0 !important;
+  }
+
+  #btn-left {
+    left: 24px !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 88px) !important;
+    border-radius: 16px 0 0 16px !important;
+    border-right: 0 !important;
+  }
+
+  #btn-right {
+    left: 108px !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 88px) !important;
+    border-radius: 0 16px 16px 0 !important;
+    border-left: 0 !important;
+  }
+
+  #btn-up::before {
+    content: "▲";
+    font-size: 25px;
+  }
+
+  #btn-down::before {
+    content: "▼";
+    font-size: 25px;
+  }
+
+  #btn-left::before {
+    content: "◀";
+    font-size: 25px;
+  }
+
+  #btn-right::before {
+    content: "▶";
+    font-size: 25px;
+  }
+
+  body::after {
+    content: "";
+    position: fixed !important;
+    left: 78px !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 88px) !important;
+    width: 88px !important;
+    height: 46px !important;
+    background: #37aeea !important;
+    border: 4px solid #0c3f7a !important;
+    box-sizing: border-box !important;
+    z-index: 99998 !important;
+    pointer-events: none !important;
+    box-shadow: inset 0 -6px 0 rgba(0,0,0,0.25) !important;
+  }
+
+  #btn-nuke,
+  #btn-ghost {
+    position: fixed !important;
+    right: 30px !important;
+    width: 46px !important;
+    height: 46px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(180deg, #b865ff, #8750e8) !important;
+    border: 4px solid #3b1d63 !important;
+    color: white !important;
+    font-size: 0 !important;
+    font-weight: 900 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    z-index: 99999 !important;
+    box-shadow: inset 0 -6px 0 rgba(0,0,0,0.25), 0 5px 0 #22103a !important;
+    touch-action: manipulation !important;
+  }
+
+  #btn-nuke {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 198px) !important;
+  }
+
+  #btn-ghost {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 136px) !important;
+  }
+
+  #btn-nuke::before {
+    content: "☢️";
+    font-size: 24px;
+  }
+
+  #btn-ghost::before {
+    content: "👻";
+    font-size: 24px;
+  }
+
+  #btn-fire {
+    position: fixed !important;
+    right: 20px !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 34px) !important;
+    width: 78px !important;
+    height: 78px !important;
+    border-radius: 50% !important;
+    font-size: 20px !important;
+    z-index: 99999 !important;
+    touch-action: manipulation !important;
+  }
+} /* end @media (max-width:1000px) */
+</style>
+<!-- END FINAL MOBILE CONTROL LAYOUT FIX -->
+</head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<body>
+  <div class="brandbar"><span class="q">QeNTROPY</span> COMICS · <span>DUNGEON WORLD</span> <span class="sub">&nbsp;— an endless quantum arcade run</span></div>
+  <div class="frame"><canvas id="board"></canvas></div>
+  <div class="controls">
+    <div class="dpad">
+      <button id="btn-up" class="pad" aria-label="up">▲</button>
+      <button id="btn-left" class="pad" aria-label="left">◀</button>
+      <button id="btn-right" class="pad" aria-label="right">▶</button>
+      <button id="btn-down" class="pad" aria-label="down">▼</button>
+    </div>
+    <div class="rightpad">
+      <button id="btn-nuke" class="nuke">☢ NUKE</button>
+      <button id="btn-ghost" class="ghost">👻 PHASE</button>
+      <button id="btn-fire" class="fire">FIRE</button>
+    </div>
+  </div>
+  <div class="hint">MOVE: WASD / Arrows · FIRE: hold SPACE · PHASE: SHIFT / G · NUKE: N or ☢ (hold mushroom bombs, blast the room)</div>
+  <script src="script.js"></script>
+  <script src="monetization.js"></script>
+<!-- QUANTUM DUNGEON MOBILE CONTROL OVERRIDE -->
+<script>
+(function () {
+  function important(el, styles) {
+    if (!el) return;
+    for (const key in styles) {
+      el.style.setProperty(key, styles[key], "important");
+    }
+  }
+
+  function allControlElements() {
+    return Array.from(document.querySelectorAll(
+      "button, [role='button'], .pad, .dpad button, .slash, [id^='btn-']"
+    ));
+  }
+
+  function text(el) {
+    return (el.textContent || "").trim().toUpperCase();
+  }
+
+  function findControl(idList, textList) {
+    for (const id of idList) {
+      const el = document.getElementById(id);
+      if (el) return el;
+    }
+
+    const controls = allControlElements();
+
+    return controls.find(function (el) {
+      const t = text(el);
+      return textList.some(function (needle) {
+        return t.includes(needle);
+      });
+    });
+  }
+
+  function bottom(px) {
+    return "calc(env(safe-area-inset-bottom, 0px) + " + px + "px)";
+  }
+
+  function styleMobileControls() {
+    if (!window.matchMedia("(max-width: 900px)").matches) return;
+
+    const up = findControl(["btn-up", "upBtn"], ["▲", "UP"]);
+    const down = findControl(["btn-down", "downBtn"], ["▼", "DOWN"]);
+    const left = findControl(["btn-left", "leftBtn"], ["◀", "LEFT"]);
+    const right = findControl(["btn-right", "rightBtn"], ["▶", "RIGHT"]);
+    const fire = findControl(["btn-fire", "fireBtn"], ["FIRE", "SHOOT"]);
+    const nuke = findControl(["btn-nuke", "nukeBtn"], ["NUKE", "☢"]);
+    const ghost = findControl(["btn-ghost", "phaseBtn", "ghostBtn"], ["PHASE", "GHOST", "👻"]);
+
+    const dpadBase = {
+      "position": "fixed",
+      "width": "68px",
+      "height": "68px",
+      "margin": "0",
+      "padding": "0",
+      "background": "#37aeea",
+      "border": "4px solid #0c3f7a",
+      "color": "white",
+      "font-size": "28px",
+      "font-weight": "900",
+      "line-height": "1",
+      "display": "flex",
+      "align-items": "center",
+      "justify-content": "center",
+      "box-sizing": "border-box",
+      "box-shadow": "inset 0 -7px 0 rgba(0,0,0,0.25)",
+      "z-index": "99999",
+      "touch-action": "manipulation",
+      "user-select": "none",
+      "-webkit-user-select": "none"
+    };
+
+if (up) {
+  up.textContent = "▲";
+  set(up, Object.assign({}, dpad, {
+    left: "92px",
+    bottom: b(160),
+    borderRadius: "18px 18px 0 0",
+    borderBottom: "0"
+  }));
+}
+    if (down) {
+  down.textContent = "▼";
+  set(down, Object.assign({}, dpad, {
+    left: "92px",
+    bottom: b(24),
+    borderRadius: "0 0 18px 18px",
+    borderTop: "0"
+  }));
+}
+ if (left) {
+  left.textContent = "◀";
+  set(left, Object.assign({}, dpad, {
+    left: "24px",
+    bottom: b(92),
+    borderRadius: "18px 0 0 18px",
+    borderRight: "0"
+  }));
+}
+    if (right) {
+      right.textContent = "▶";
+      important(right, Object.assign({}, dpadBase, {
+        "left": "160px",
+        "bottom": bottom(152),
+        "border-radius": "0 18px 18px 0",
+        "border-left": "0"
+      }));
+    }
+
+    let center = document.getElementById("qd-dpad-center-patch");
+    if (!center) {
+      center = document.createElement("div");
+      center.id = "qd-dpad-center-patch";
+      document.body.appendChild(center);
+    }
+
+    important(center, {
+      "position": "fixed",
+      "left": "92px",
+      "bottom": bottom(92),
+      "width": "68px",
+      "height": "68px",
+      "background": "#37aeea",
+      "border": "4px solid #0c3f7a",
+      "box-sizing": "border-box",
+      "box-shadow": "inset 0 -7px 0 rgba(0,0,0,0.25)",
+      "z-index": "99998",
+      "pointer-events": "none"
+    });
+
+    const purpleRound = {
+      "position": "fixed",
+      "right": "28px",
+      "width": "76px",
+      "height": "76px",
+      "border-radius": "50%",
+      "background": "linear-gradient(180deg, #b865ff, #8750e8)",
+      "border": "4px solid #3b1d63",
+      "color": "white",
+      "font-size": "34px",
+      "font-weight": "900",
+      "padding": "0",
+      "margin": "0",
+      "display": "flex",
+      "align-items": "center",
+      "justify-content": "center",
+      "box-sizing": "border-box",
+      "box-shadow": "inset 0 -8px 0 rgba(0,0,0,0.25), 0 6px 0 #22103a",
+      "z-index": "99999",
+      "touch-action": "manipulation",
+      "user-select": "none",
+      "-webkit-user-select": "none"
+    };
+
+    if (nuke) {
+      nuke.textContent = "☢️";
+      important(nuke, Object.assign({}, purpleRound, {
+        "bottom": bottom(278)
+      }));
+    }
+
+    if (ghost) {
+      ghost.textContent = "👻";
+      important(ghost, Object.assign({}, purpleRound, {
+        "bottom": bottom(188)
+      }));
+    }
+
+    if (fire) {
+      fire.textContent = "FIRE";
+      important(fire, {
+        "position": "fixed",
+        "right": "18px",
+        "bottom": bottom(48),
+        "width": "132px",
+        "height": "132px",
+        "border-radius": "50%",
+        "font-size": "30px",
+        "font-weight": "900",
+        "z-index": "99999",
+        "touch-action": "manipulation",
+        "user-select": "none",
+        "-webkit-user-select": "none"
+      });
+    }
+
+    document.body.style.setProperty("padding-bottom", "280px", "important");
+  }
+
+  window.addEventListener("load", styleMobileControls);
+  window.addEventListener("resize", styleMobileControls);
+  window.addEventListener("orientationchange", styleMobileControls);
+
+  setInterval(styleMobileControls, 500);
+})();
+</script>
+<!-- END QUANTUM DUNGEON MOBILE CONTROL OVERRIDE -->
+<!-- POSITION ONLY: MOVE MOBILE CONTROLS DOWN -->
+<script>
+(function () {
+  function b(px) {
+    return "calc(env(safe-area-inset-bottom, 0px) + " + px + "px)";
+  }
+
+  function set(el, styles) {
+    if (!el) return;
+    for (const k in styles) {
+      el.style.setProperty(k, styles[k], "important");
+    }
+  }
+
+  function moveControlsDownOnly() {
+    if (!window.matchMedia("(max-width: 1000px)").matches) return;
+
+    const up = document.getElementById("btn-up");
+    const down = document.getElementById("btn-down");
+    const left = document.getElementById("btn-left");
+    const right = document.getElementById("btn-right");
+    const nuke = document.getElementById("btn-nuke");
+    const ghost = document.getElementById("btn-ghost");
+    const fire = document.getElementById("btn-fire");
+
+    /* D-PAD — same size, moved down */
+    set(up, {
+      left: "88px",
+      bottom: b(118),
+      width: "54px",
+      height: "54px"
+    });
+
+    set(left, {
+      left: "34px",
+      bottom: b(64),
+      width: "54px",
+      height: "54px"
+    });
+
+    set(right, {
+      left: "142px",
+      bottom: b(64),
+      width: "54px",
+      height: "54px"
+    });
+
+    set(down, {
+      left: "88px",
+      bottom: b(10),
+      width: "54px",
+      height: "54px"
+    });
+
+    /* remove old center patches, then rebuild the center lower */
+    document.querySelectorAll("#qd-dpad-center, #qd-dpad-center-final, #qd-dpad-center-patch").forEach(el => el.remove());
+
+    let center = document.getElementById("qd-dpad-center-position-final");
+    if (!center) {
+      center = document.createElement("div");
+      center.id = "qd-dpad-center-position-final";
+      document.body.appendChild(center);
+    }
+
+    set(center, {
+      position: "fixed",
+      left: "88px",
+      bottom: b(64),
+      width: "54px",
+      height: "54px",
+      background: "#37aeea",
+      border: "4px solid #0c3f7a",
+      boxSizing: "border-box",
+      boxShadow: "inset 0 -6px 0 rgba(0,0,0,0.25)",
+      zIndex: "99998",
+      pointerEvents: "none"
+    });
+
+    /* NUKE left of GHOST — moved down */
+    set(nuke, {
+      right: "110px",
+      bottom: b(118),
+      width: "52px",
+      height: "52px"
+    });
+
+    set(ghost, {
+      right: "46px",
+      bottom: b(118),
+      width: "52px",
+      height: "52px"
+    });
+
+    /* FIRE — moved down but still above browser bar */
+    set(fire, {
+      right: "42px",
+      bottom: b(8),
+      width: "84px",
+      height: "84px"
+    });
+  }
+
+  window.addEventListener("load", moveControlsDownOnly);
+  window.addEventListener("resize", moveControlsDownOnly);
+  window.addEventListener("orientationchange", moveControlsDownOnly);
+  setInterval(moveControlsDownOnly, 25);
+})();
+</script>
+<!-- END POSITION ONLY -->
+ <!-- FINAL ROUND JOYSTICK MOVEMENT PAD -->
+<script>
+(function () {
+  function set(el, styles) {
+    if (!el) return;
+    for (const k in styles) {
+      el.style.setProperty(k, styles[k], "important");
+    }
+  }
+
+  function b(px) {
+    return "calc(env(safe-area-inset-bottom, 0px) + " + px + "px)";
+  }
+
+  function fireButtonEvent(el, type) {
+    if (!el) return;
+    el.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
+  }
+
+  const dirButtons = {
+    up: null,
+    down: null,
+    left: null,
+    right: null
+  };
+
+  let activeDirs = new Set();
+
+  function pressDirections(nextDirs) {
+    const next = new Set(nextDirs);
+
+    for (const dir of activeDirs) {
+      if (!next.has(dir)) {
+        fireButtonEvent(dirButtons[dir], "pointerup");
+        fireButtonEvent(dirButtons[dir], "pointercancel");
+      }
+    }
+
+    for (const dir of next) {
+      if (!activeDirs.has(dir)) {
+        fireButtonEvent(dirButtons[dir], "pointerdown");
+      }
+    }
+
+    activeDirs = next;
+  }
+
+  function releaseAllDirections() {
+    for (const dir of activeDirs) {
+      fireButtonEvent(dirButtons[dir], "pointerup");
+      fireButtonEvent(dirButtons[dir], "pointercancel");
+    }
+    activeDirs.clear();
+  }
+
+  function installJoystick() {
+    if (!window.matchMedia("(max-width: 1000px)").matches) return;
+
+    dirButtons.up = document.getElementById("btn-up");
+    dirButtons.down = document.getElementById("btn-down");
+    dirButtons.left = document.getElementById("btn-left");
+    dirButtons.right = document.getElementById("btn-right");
+
+    const oldDpadButtons = [
+      dirButtons.up,
+      dirButtons.down,
+      dirButtons.left,
+      dirButtons.right
+    ];
+
+    /* Hide old D-pad buttons completely, but keep them alive for JS */
+    oldDpadButtons.forEach(function (el) {
+      set(el, {
+        opacity: "0",
+        pointerEvents: "none",
+        width: "1px",
+        height: "1px",
+        left: "-9999px",
+        bottom: "-9999px",
+        position: "fixed"
+      });
+    });
+
+    /* Remove all fake center pieces from older patches */
+    document.querySelectorAll(
+      "#qd-dpad-center, #qd-dpad-center-final, #qd-dpad-center-patch, #qd-dpad-center-final-clean, #qd-dpad-center-position-final, #qd-dpad-true-center-final"
+    ).forEach(el => el.remove());
+
+    let cleanup = document.getElementById("qd-joystick-cleanup-style");
+    if (!cleanup) {
+      cleanup = document.createElement("style");
+      cleanup.id = "qd-joystick-cleanup-style";
+      document.head.appendChild(cleanup);
+    }
+
+    cleanup.textContent = `
+      body::after,
+      .dpad::after,
+      #btn-up::before,
+      #btn-down::before,
+      #btn-left::before,
+      #btn-right::before {
+        content: none !important;
+        display: none !important;
+      }
+
+      #qd-round-joystick,
+      #qd-round-joystick * {
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+        touch-action: none !important;
+      }
+    `;
+
+    let joy = document.getElementById("qd-round-joystick");
+    if (!joy) {
+      joy = document.createElement("div");
+      joy.id = "qd-round-joystick";
+
+      const thumb = document.createElement("div");
+      thumb.id = "qd-round-joystick-thumb";
+
+      joy.appendChild(thumb);
+      document.body.appendChild(joy);
+
+      function updateFromPointer(e) {
+        e.preventDefault();
+
+        const rect = joy.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = e.clientX - cx;
+        const dy = e.clientY - cy;
+
+        const dead = 14;
+        const dirs = [];
+
+        if (dx < -dead) dirs.push("left");
+        if (dx > dead) dirs.push("right");
+        if (dy < -dead) dirs.push("up");
+        if (dy > dead) dirs.push("down");
+
+        pressDirections(dirs);
+
+        const max = 34;
+        const mag = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+        const tx = Math.max(-max, Math.min(max, dx));
+        const ty = Math.max(-max, Math.min(max, dy));
+
+        const thumb = document.getElementById("qd-round-joystick-thumb");
+        if (thumb) {
+          thumb.style.setProperty("transform", "translate(calc(-50% + " + tx + "px), calc(-50% + " + ty + "px))", "important");
+        }
+      }
+
+      function resetJoystick(e) {
+        if (e) e.preventDefault();
+        releaseAllDirections();
+
+        const thumb = document.getElementById("qd-round-joystick-thumb");
+        if (thumb) {
+          thumb.style.setProperty("transform", "translate(-50%, -50%)", "important");
+        }
+      }
+
+      joy.addEventListener("pointerdown", function (e) {
+        joy.setPointerCapture && joy.setPointerCapture(e.pointerId);
+        updateFromPointer(e);
+      });
+
+      joy.addEventListener("pointermove", function (e) {
+        if (e.buttons || e.pressure > 0) updateFromPointer(e);
+      });
+
+      joy.addEventListener("pointerup", resetJoystick);
+      joy.addEventListener("pointercancel", resetJoystick);
+      joy.addEventListener("lostpointercapture", resetJoystick);
+    }
+
+    set(joy, {
+      position: "fixed",
+      left: "28px",
+      bottom: b(42),
+      width: "128px",
+      height: "128px",
+      borderRadius: "50%",
+      background: "radial-gradient(circle at 35% 30%, #55c9ff 0%, #37aeea 45%, #1b7fc5 100%)",
+      border: "5px solid #0c3f7a",
+      boxSizing: "border-box",
+      zIndex: "100000",
+      boxShadow: "inset 0 -10px 0 rgba(0,0,0,0.25), 0 8px 0 #08274f",
+      display: "block",
+      touchAction: "none"
+    });
+
+    const thumb = document.getElementById("qd-round-joystick-thumb");
+    set(thumb, {
+      position: "absolute",
+      left: "50%",
+      top: "50%",
+      width: "48px",
+      height: "48px",
+      borderRadius: "50%",
+      background: "rgba(255,255,255,0.92)",
+      border: "4px solid rgba(12,63,122,0.55)",
+      boxSizing: "border-box",
+      transform: "translate(-50%, -50%)",
+      boxShadow: "0 4px 0 rgba(0,0,0,0.22)",
+      pointerEvents: "none"
+    });
+
+    document.body.style.setProperty("padding-bottom", "220px", "important");
+  }
+
+  window.addEventListener("load", installJoystick);
+  window.addEventListener("resize", installJoystick);
+  window.addEventListener("orientationchange", installJoystick);
+  setInterval(installJoystick, 50);
+})();
+</script>
+<!-- END FINAL ROUND JOYSTICK MOVEMENT PAD -->
+ <!-- TRUE FINAL ROUND MOVEMENT PAD OVERRIDE -->
+<script>
+(function () {
+  const DIRS = ["up", "down", "left", "right"];
+  let activeDirs = new Set();
+
+  function b(px) {
+    return "calc(env(safe-area-inset-bottom, 0px) + " + px + "px)";
+  }
+
+  function set(el, styles) {
+    if (!el) return;
+    for (const k in styles) {
+      el.style.setProperty(k, styles[k], "important");
+    }
+  }
+
+  function dispatchOldButton(dir, type) {
+    const map = {
+      up: "btn-up",
+      down: "btn-down",
+      left: "btn-left",
+      right: "btn-right"
+    };
+
+    const el = document.getElementById(map[dir]);
+    if (!el) return;
+
+    try {
+      el.dispatchEvent(new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        pointerId: 1,
+        pointerType: "touch"
+      }));
+    } catch (e) {
+      el.dispatchEvent(new Event(type, {
+        bubbles: true,
+        cancelable: true
+      }));
+    }
+  }
+
+  function applyDirections(nextList) {
+    const next = new Set(nextList);
+
+    /* Primary method: write directly into the game's held movement Set */
+    try {
+      if (typeof held !== "undefined" && held && typeof held.add === "function") {
+        DIRS.forEach(function (dir) {
+          held.delete(dir);
+        });
+
+        next.forEach(function (dir) {
+          held.add(dir);
+        });
+
+        try {
+          if (typeof phase !== "undefined" && phase !== "play" && typeof startOrRestart === "function") {
+            startOrRestart();
+          }
+        } catch (e) {}
+
+        activeDirs = next;
+        return;
+      }
+    } catch (e) {}
+
+    /* Backup method: simulate the old hidden buttons */
+    activeDirs.forEach(function (dir) {
+      if (!next.has(dir)) {
+        dispatchOldButton(dir, "pointerup");
+        dispatchOldButton(dir, "pointercancel");
+      }
+    });
+
+    next.forEach(function (dir) {
+      if (!activeDirs.has(dir)) {
+        dispatchOldButton(dir, "pointerdown");
+      }
+    });
+
+    activeDirs = next;
+  }
+
+  function releaseMovement() {
+    try {
+      if (typeof held !== "undefined" && held && typeof held.delete === "function") {
+        DIRS.forEach(function (dir) {
+          held.delete(dir);
+        });
+      }
+    } catch (e) {}
+
+    activeDirs.forEach(function (dir) {
+      dispatchOldButton(dir, "pointerup");
+      dispatchOldButton(dir, "pointercancel");
+    });
+
+    activeDirs.clear();
+  }
+
+  function getDirectionsFromTouch(e, pad) {
+    const rect = pad.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+
+    const deadZone = 14;
+    const dirs = [];
+
+    if (dx < -deadZone) dirs.push("left");
+    if (dx > deadZone) dirs.push("right");
+    if (dy < -deadZone) dirs.push("up");
+    if (dy > deadZone) dirs.push("down");
+
+    return dirs;
+  }
+
+  function installFinalMovementPad() {
+    if (!window.matchMedia("(max-width: 1000px)").matches) return;
+
+    /* Hide every old D-pad / fake center / broken joystick artifact */
+    const oldStuff = [
+      "btn-up",
+      "btn-down",
+      "btn-left",
+      "btn-right",
+      "qd-dpad-center",
+      "qd-dpad-center-final",
+      "qd-dpad-center-patch",
+      "qd-dpad-center-final-clean",
+      "qd-dpad-center-position-final",
+      "qd-dpad-true-center-final",
+      "qd-round-joystick",
+      "qd-round-joystick-thumb"
+    ];
+
+    oldStuff.forEach(function (id) {
+      const el = document.getElementById(id);
+      set(el, {
+        display: "none",
+        opacity: "0",
+        pointerEvents: "none",
+        left: "-9999px",
+        bottom: "-9999px",
+        width: "1px",
+        height: "1px",
+        position: "fixed"
+      });
+    });
+
+    let cleanup = document.getElementById("qd-final-movement-style");
+    if (!cleanup) {
+      cleanup = document.createElement("style");
+      cleanup.id = "qd-final-movement-style";
+      document.head.appendChild(cleanup);
+    }
+
+    cleanup.textContent = `
+      body::after,
+      .dpad::after,
+      #btn-up::before,
+      #btn-down::before,
+      #btn-left::before,
+      #btn-right::before {
+        content: none !important;
+        display: none !important;
+      }
+
+      #qd-movement-pad-final,
+      #qd-movement-pad-final * {
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+        touch-action: none !important;
+      }
+    `;
+
+    let pad = document.getElementById("qd-movement-pad-final");
+
+    if (!pad) {
+      pad = document.createElement("div");
+      pad.id = "qd-movement-pad-final";
+      pad.innerHTML = '<div id="qd-move-icon">✣</div>'; pad.textContent = "MOVEMENT";
+      document.body.appendChild(pad);
+
+      pad.addEventListener("pointerdown", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+          pad.setPointerCapture(e.pointerId);
+        } catch (err) {}
+        applyDirections(getDirectionsFromTouch(e, pad));
+      });
+
+      pad.addEventListener("pointermove", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        applyDirections(getDirectionsFromTouch(e, pad));
+      });
+
+      pad.addEventListener("pointerup", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        releaseMovement();
+      });
+
+      pad.addEventListener("pointercancel", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        releaseMovement();
+      });
+
+      pad.addEventListener("lostpointercapture", function () {
+        releaseMovement();
+      });
+    }
+
+    /* Round movement pad */
+    set(pad, {
+      position: "fixed",
+      left: "24px",
+      bottom: b(48),
+      width: "128px",
+      height: "128px",
+      borderRadius: "50%",
+      background: "radial-gradient(circle at 35% 30%, #55c9ff 0%, #37aeea 48%, #1b7fc5 100%)",
+      border: "5px solid #0c3f7a",
+      boxSizing: "border-box",
+      zIndex: "100000",
+      boxShadow: "inset 0 -10px 0 rgba(0,0,0,0.25), 0 8px 0 #08274f",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "rgba(255,255,255,0.92)",
+      fontSize: "13px",
+      fontWeight: "900",
+      letterSpacing: "1px",
+      textAlign: "center",
+      touchAction: "none"
+    });
+const moveIcon = document.getElementById("qd-move-icon");
+set(moveIcon, {
+  fontSize: "42px",
+  lineHeight: "1",
+  color: "rgba(255,255,255,0.92)",
+  fontWeight: "900",
+  textShadow: "0 2px 0 rgba(0,0,0,0.18)"
+});
+    /* Keep NUKE and PHASE where they are */
+    const nuke = document.getElementById("btn-nuke");
+    const ghost = document.getElementById("btn-ghost");
+
+    set(nuke, {
+      position: "fixed",
+      right: "110px",
+      bottom: b(118),
+      width: "52px",
+      height: "52px"
+    });
+
+    set(ghost, {
+      position: "fixed",
+      right: "46px",
+      bottom: b(118),
+      width: "52px",
+      height: "52px"
+    });
+
+    /* Move FIRE back up */
+    const fire = document.getElementById("btn-fire");
+
+    set(fire, {
+      position: "fixed",
+      right: "42px",
+      bottom: b(67),
+      width: "84px",
+      height: "84px",
+      borderRadius: "50%",
+      fontSize: "22px",
+      zIndex: "99999"
+    });
+
+    document.body.style.setProperty("padding-bottom", "220px", "important");
+  }
+
+  window.addEventListener("load", installFinalMovementPad);
+  window.addEventListener("resize", installFinalMovementPad);
+  window.addEventListener("orientationchange", installFinalMovementPad);
+  setInterval(installFinalMovementPad, 25);
+})();
+</script>
+<!-- END TRUE FINAL ROUND MOVEMENT PAD OVERRIDE -->
+ <!-- FINAL FINAL: FIRE DOWN + MOVEMENT ICON -->
+<script>
+(function () {
+  function b(px) {
+    return "calc(env(safe-area-inset-bottom, 0px) + " + px + "px)";
+  }
+
+  function set(el, styles) {
+    if (!el) return;
+    for (const k in styles) {
+      el.style.setProperty(k, styles[k], "important");
+    }
+  }
+
+  function finalFireAndMovementFix() {
+    if (!window.matchMedia("(max-width: 1000px)").matches) return;
+
+    /* Move yellow FIRE button back DOWN */
+    const fire = document.getElementById("btn-fire");
+    set(fire, {
+      position: "fixed",
+      right: "42px",
+      bottom: b(28),
+      width: "84px",
+      height: "84px",
+      borderRadius: "50%",
+      fontSize: "22px",
+      zIndex: "100001"
+    });
+
+    /* Remove MOVEMENT text and replace it with a simple movement icon */
+    const pad = document.getElementById("qd-movement-pad-final");
+    if (pad) {
+      const current = pad.textContent.trim();
+
+      if (current === "MOVEMENT" || !pad.querySelector("#qd-movement-icon-final")) {
+        pad.innerHTML = '<div id="qd-movement-icon-final">✥</div>';
+      }
+
+      set(pad, {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "white",
+        fontSize: "0",
+        textAlign: "center"
+      });
+
+      const icon = document.getElementById("qd-movement-icon-final");
+      set(icon, {
+        fontSize: "52px",
+        lineHeight: "1",
+        color: "rgba(255,255,255,0.92)",
+        fontWeight: "900",
+        textShadow: "0 3px 0 rgba(0,0,0,0.2)",
+        pointerEvents: "none"
+      });
+    }
+  }
+
+  window.addEventListener("load", finalFireAndMovementFix);
+  window.addEventListener("resize", finalFireAndMovementFix);
+  window.addEventListener("orientationchange", finalFireAndMovementFix);
+
+  /* This runs after the older patches and forces the final look */
+  setInterval(finalFireAndMovementFix, 20);
+})();
+</script>
+<!-- END FINAL FINAL: FIRE DOWN + MOVEMENT ICON -->
+ <!-- TRUE FINAL STABILIZER: stable FIRE + blank movement pad -->
+<script>
+(function () {
+  function b(px) {
+    return "calc(env(safe-area-inset-bottom, 0px) + " + px + "px)";
+  }
+
+  function set(el, styles) {
+    if (!el) return;
+    for (const k in styles) {
+      el.style.setProperty(k, styles[k], "important");
+    }
+  }
+
+  function dispatchToRealFire(type, sourceEvent) {
+    const realFire = document.getElementById("btn-fire");
+    if (!realFire) return;
+
+    try {
+      realFire.dispatchEvent(new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        pointerId: sourceEvent && sourceEvent.pointerId ? sourceEvent.pointerId : 1,
+        pointerType: "touch",
+        clientX: sourceEvent && sourceEvent.clientX ? sourceEvent.clientX : 0,
+        clientY: sourceEvent && sourceEvent.clientY ? sourceEvent.clientY : 0
+      }));
+    } catch (err) {
+      realFire.dispatchEvent(new Event(type, {
+        bubbles: true,
+        cancelable: true
+      }));
+    }
+  }
+
+  function installStableFinalControls() {
+    if (!window.matchMedia("(max-width: 1000px)").matches) return;
+
+    let style = document.getElementById("qd-true-final-stabilizer-style");
+    if (!style) {
+      style = document.createElement("style");
+      style.id = "qd-true-final-stabilizer-style";
+      document.head.appendChild(style);
+    }
+
+    style.textContent = `
+      /* Hide the real fire button so older patches cannot visibly flicker it */
+      #btn-fire {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        color: transparent !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border-color: transparent !important;
+      }
+
+      /* Remove all text/icons from the blue movement pad */
+      #qd-movement-pad-final,
+      #qd-movement-pad-final * {
+        color: transparent !important;
+        font-size: 0 !important;
+        text-shadow: none !important;
+      }
+
+      #qd-movement-pad-final * {
+        display: none !important;
+      }
+
+      #qd-stable-fire-final {
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+        touch-action: manipulation !important;
+      }
+    `;
+
+    /* Keep movement pad blank, no white MOVEMENT text, no icon */
+    const pad = document.getElementById("qd-movement-pad-final");
+    if (pad) {
+      pad.innerHTML = "";
+      set(pad, {
+        color: "transparent",
+        fontSize: "0",
+        textShadow: "none"
+      });
+    }
+
+    /* Create one stable visible fire button */
+    let stableFire = document.getElementById("qd-stable-fire-final");
+    if (!stableFire) {
+      stableFire = document.createElement("button");
+      stableFire.id = "qd-stable-fire-final";
+      stableFire.textContent = "";
+      document.body.appendChild(stableFire);
+
+      stableFire.addEventListener("pointerdown", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dispatchToRealFire("pointerdown", e);
+      });
+
+      stableFire.addEventListener("pointerup", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dispatchToRealFire("pointerup", e);
+      });
+
+      stableFire.addEventListener("pointercancel", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dispatchToRealFire("pointercancel", e);
+      });
+
+      stableFire.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dispatchToRealFire("click", e);
+      });
+    }
+
+    /* Stable yellow FIRE placement — no jumping */
+    set(stableFire, {
+      position: "fixed",
+      right: "42px",
+      bottom: b(28),
+      width: "84px",
+      height: "84px",
+      borderRadius: "50%",
+      background: "radial-gradient(circle at 35% 30%, #ffe66d 0%, #ffd12f 55%, #d99b00 100%)",
+      border: "5px solid #20132e",
+      color: "#201000",
+      fontSize: "22px",
+      fontWeight: "900",
+      fontStyle: "italic",
+      fontFamily: "inherit",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
+      padding: "0",
+      margin: "0",
+      boxSizing: "border-box",
+      boxShadow: "inset 0 -8px 0 rgba(0,0,0,0.18), 0 7px 0 #9a6a00",
+      zIndex: "200000",
+      opacity: "1",
+      pointerEvents: "auto",
+      touchAction: "manipulation"
+    });
+  }
+
+  window.addEventListener("load", installStableFinalControls);
+  window.addEventListener("resize", installStableFinalControls);
+  window.addEventListener("orientationchange", installStableFinalControls);
+
+  /* This intentionally wins against older patches without moving the visible fire button */
+  setInterval(installStableFinalControls, 20);
+})();
+</script>
+<!-- END TRUE FINAL STABILIZER -->
+ <!-- MUSIC FIX: start background music after first player tap -->
+<script>
+(function () {
+  let musicStarted = false;
+  let bgMusic = null;
+
+  function startDungeonMusic() {
+    if (musicStarted) return;
+    musicStarted = true;
+
+    try {
+      bgMusic = new Audio("DUNGEONMUSIC.m4a");
+      bgMusic.loop = true;
+      bgMusic.volume = 0.55;
+      bgMusic.preload = "auto";
+
+      const playPromise = bgMusic.play();
+
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(function () {
+          musicStarted = false;
+        });
+      }
+
+      window.qdBgMusic = bgMusic;
+    } catch (e) {
+      musicStarted = false;
+      console.log("Music start failed:", e);
+    }
+  }
+
+  function installMusicUnlock() {
+    document.addEventListener("pointerdown", startDungeonMusic, { once: true });
+    document.addEventListener("touchstart", startDungeonMusic, { once: true });
+    document.addEventListener("click", startDungeonMusic, { once: true });
+    document.addEventListener("keydown", startDungeonMusic, { once: true });
+  }
+
+  window.addEventListener("load", installMusicUnlock);
+})();
+</script>
+<!-- END MUSIC FIX -->
+</body>
+</html>
